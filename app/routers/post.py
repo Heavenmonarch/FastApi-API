@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional
 from .. import models, schemas
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import oauth2
@@ -14,9 +15,12 @@ router = APIRouter(
 
 # Get posts route
 @router.get("/", response_model=List[schemas.Post])
-def get_posts(db: Session = Depends(get_db), limit: int = 10):
+def get_posts(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional [str] = ""):
     print(limit)
-    posts = db.query(models.Post).limit(limit).all()
+    posts = db.query(models.Post).filter(or_(models.Post.title.contains(search), models.Post.content.contains(search))).limit(limit).offset(skip).all()
+    
+    if not posts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with keyword {search} not found")
     return posts
 
 
