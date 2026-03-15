@@ -15,6 +15,7 @@ class PostCreate(PostBase):
 class Post(PostBase):
     # id: int
     created_at: datetime
+    owner_id: int
     class Config:
         from_attributes = True
         
