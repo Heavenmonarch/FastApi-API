@@ -14,8 +14,8 @@ router = APIRouter(
 
 # Get posts route
 @router.get("/", response_model=List[schemas.Post])
-def get_posts(db: Session = Depends(get_db)):
-    posts = db.query(models.Post).all()
+def get_posts(db: Session = Depends(get_db), current_user: dict = Depends(oauth2.get_current_user)):
+    posts = db.query(models.Post).filter(models.Post.owner_id== current_user.id).all()
     return posts
 
 
@@ -32,11 +32,14 @@ def create_posts(post:schemas.PostCreate, db: Session = Depends(get_db), current
 
 # Get post route (to get a singular post) 
 @router.get("/{id}", response_model=schemas.Post)
-def get_post(id: int, db: Session = Depends(get_db)):
+def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} was not found")
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not Authorized to perform requested action")
+    
     return post
 
 
