@@ -22,8 +22,8 @@ def get_posts(db: Session = Depends(get_db)):
 # Create posts route
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_posts(post:schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    # print(user_id)
-    new_post = models.Post(**post.dict())
+    # owner_id = current_user.id so that it automatically gets the id of the person creating the post when they do create the post
+    new_post = models.Post(owner_id=current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
