@@ -18,8 +18,6 @@ app.include_router(auth.router)
 # Landing page route
 @app.get("/")
 def root():
-    return {"status": "okay",
-            "process": "working",
-            "message": "welcome to my API"}
+    return {"message": "Homepage"}
 
 
