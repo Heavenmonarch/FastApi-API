@@ -19,8 +19,7 @@ def get_posts(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, sea
     print(limit)
     posts = db.query(models.Post).filter(or_(models.Post.title.contains(search), models.Post.content.contains(search))).limit(limit).offset(skip).all()
     
-    if not posts:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with keyword {search} not found")
+    results = db.query(models.Post)
     return posts
 
 
