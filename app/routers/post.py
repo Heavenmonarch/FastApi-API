@@ -40,15 +40,30 @@ def create_posts(post:schemas.PostCreate, db: Session = Depends(get_db), current
 
 
 # Get post route (to get a singular post) 
-@router.get("/{id}", response_model=schemas.Post)
+@router.get("/{id}", response_model=schemas.PostOut)
 def get_post(id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Post).filter(models.Post.id == id).first()
-    
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} was not found")
+    # post = db.query(models.Post).filter(models.Post.id == id).first()
+    result = db.query(
+    models.Post,
+    func.count(models.Vote.post_id).label("votes")
+    ).join(
+    models.Vote,
+    models.Vote.post_id == models.Post.id,
+    isouter=True
+    ).group_by(models.Post.id).filter(
+    models.Post.id == id
+    ).first()
 
-    return post
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"post with id: {id} was not found"
+        )
 
+    post = result[0]          # first element is the Post object
+    votes = result.votes      # access the labeled column as attribute
+
+    return {"post": post, "votes": votes}
 
 # update post
 @router.put("/{id}", response_model=schemas.Post)
