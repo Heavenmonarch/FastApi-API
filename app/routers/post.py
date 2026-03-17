@@ -1,7 +1,7 @@
 from typing import List, Optional
 from .. import models, schemas
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import oauth2
@@ -14,13 +14,18 @@ router = APIRouter(
 
 
 # Get posts route
-@router.get("/", response_model=List[schemas.Post])
+@router.get("/", response_model=List[schemas.PostOut])
+# @router.get("/")
 def get_posts(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional [str] = ""):
     print(limit)
-    posts = db.query(models.Post).filter(or_(models.Post.title.contains(search), models.Post.content.contains(search))).limit(limit).offset(skip).all()
-    
-    results = db.query(models.Post)
-    return posts
+    # posts = db.query(models.Post).filter(or_(models.Post.title.contains(search), models.Post.content.contains(search))).limit(limit).offset(skip).all()
+
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(or_(models.Post.title.contains(search), models.Post.content.contains(search))).limit(limit).offset(skip).all()
+    # print (results)
+    return [
+        {"post": post, "votes": votes}
+        for post, votes in posts
+    ]
 
 
 # Create posts route
