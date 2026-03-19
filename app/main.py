@@ -38,7 +38,3 @@ def root():
     return {"message": "Homepage"}
 
 
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # fallback for local dev
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
