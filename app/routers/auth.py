@@ -19,7 +19,7 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session =
     if not utils.verify(user_credentials.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credtials")
     
-    # creating the jwt token, by defining the payload. We're only using id for some reason but we can also put in other information
+    # creating the jwt token, by defining the payload. We're only using id but we can also put in other information
     access_token = oauth2.create_access_token(data = {"user_id": user.id})
     
     return {"access_token": access_token, 

@@ -31,5 +31,6 @@ def vote(vote: schemas.Vote, db: Session = Depends(database.get_db), current_use
         
         vote_query.delete(synchronize_session=False)
         db.commit()
-        
+        # How to tighten the code? 
+        # First we send the request and then we determine 
         return {"message": "Vote deleted"}
